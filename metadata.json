@@ -1,0 +1,6 @@
+{
+  "name": "ÈDÁ Artisanal Living | Nigerian Luxury Fragrance & Home",
+  "description": "Premium Nigerian physical-product ecommerce platform featuring handcrafted artisanal scented candles, botanical reed diffusers, and room mists. Built with Supabase, Google Auth, Resend, and Expo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
