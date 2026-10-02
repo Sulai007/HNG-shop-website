@@ -13,7 +13,7 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
   className = '',
   aspectRatio = '4/3',
 }) => {
-  // Bespoke artisanal Nigerian illustrations for each physical product category
+  // Bespoke vector illustrations for physical product categories
   const renderCategoryArtwork = () => {
     switch (category) {
       case 'candles':

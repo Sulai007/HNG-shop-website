@@ -1,23 +1,29 @@
-# ÈDÁ Artisanal Living — Nigerian Luxury Ecommerce Platform
+# Nova Stores (NovaTrend) — Premier Nigerian Ecommerce Platform
 
-A production-grade, full-stack ecommerce platform designed for a premium Nigerian physical-product brand. Handcrafted in Lagos, Nigeria, **ÈDÁ** produces small-batch artisanal scented candles in wheel-thrown terracotta vessels, botanical reed diffusers, and atmospheric room mists formulated from indigenous West African botanicals.
+A production-grade, full-stack physical-product ecommerce platform designed for modern lifestyles in Nigeria and beyond. **Nova Stores (NovaTrend)** curates trending products across Fashion, Electronics, Beauty, Fitness, Home Decor, and Accessories with 100% verified authentic items, fast nationwide delivery, and secure payment processing.
 
-Built with **React**, **TypeScript**, **Tailwind CSS**, **Supabase PostgreSQL & Auth (Google OAuth)**, **Resend Transactional Email**, and a shared **Expo / React Native** mobile client.
+Built with **React 19**, **TypeScript**, **Tailwind CSS**, **Supabase PostgreSQL & Auth (Google OAuth SSO)**, **Resend Transactional Email**, and a shared **Expo / React Native** mobile client.
 
 ---
 
-## 1. Key Features
+## 1. Key Features & Store Experience
 
-- **Storefront & Catalogue**: Minimal luxury aesthetic with responsive layout, real-time category filtering, instant search, and sorting.
-- **Product Experience**: Bespoke vector artwork, variant options (vessel styles, wax weights, glass flacons), real-time stock availability, and scent note accords (Top, Heart, Base).
-- **Cart Management**: Real-time quantity steppers with inventory constraints, subtotal and delivery fee calculations, and persistent state across reloads.
-- **Nigerian Delivery Calculation**: Built-in logistics rate selector across all Nigerian regions (Lagos Mainland/Island, Abuja FCT, Port Harcourt, Ibadan, and Nationwide Express).
-- **Authoritative Server Validation**: Authoritative recalculation of all prices and totals on the backend. Client-tampered totals are strictly ignored.
-- **Mock Payment Gateway**: Abstracted test payment provider simulating Nigerian NGN card transactions (Paystack/Flutterwave pattern) with an optional failure simulation switch for edge-case testing.
-- **Persistent Orders**: Complete snapshot retention in PostgreSQL; historical orders preserve exact purchased names, variant information, and unit prices.
-- **Transactional Confirmation Email (Resend)**: Professional HTML receipts dispatched server-side via Resend with order references, line items, and delivery addresses. Includes an in-app email preview inspector.
-- **Google OAuth & Session Persistence**: Seamless patron sign-in via Supabase Auth with automatic session retention across reloads, protected account dashboard, order history, and instant demo personas.
-- **Mobile Frontend (Expo / React Native)**: Complete mobile application located in `/mobile` sharing the exact same Supabase database and authentication backend.
+- **Curated Multi-Category Storefront**: Dynamic hero banner with summer sale promotions, category tabs (Fashion, Electronics, Beauty, Fitness, Home Decor, Accessories), real-time search, sorting, and responsive layout.
+- **Rich Product Experience**: Comprehensive product detail views with real-time stock availability, multi-variant selections (sizes, colors, finishes), price adjustments, and customer review metrics.
+- **Cart & Inventory Management**: Interactive slide-over cart drawer with real-time inventory limit enforcement, variant trackers, and persistent state across page reloads.
+- **Accurate Nigerian Delivery Fee Calculation**: Built-in logistics fee calculator across all Nigerian regions:
+  - **Lagos Island** (Lekki, Ikoyi, VI) — ₦3,500 (Same day or next day)
+  - **Lagos Mainland** (Ikeja, Surulere, Yaba) — ₦3,500 (1–2 business days)
+  - **Abuja FCT** — ₦5,500 (2–3 business days)
+  - **Rivers / Port Harcourt** — ₦6,000 (2–4 business days)
+  - **Oyo / Ibadan** — ₦4,500 (2–3 business days)
+  - **Nationwide Express** — ₦7,500 (3–5 business days)
+- **Authoritative Server Validation**: Authoritative recalculation of all line item prices and delivery fees on the backend. Client-tampered prices and totals are strictly rejected.
+- **Abstracted Nigerian Payment Gateway**: Pluggable payment service interface (`IPaymentProvider`) simulating Paystack / Flutterwave card and bank transfer checkout flows, complete with test failure simulation switches for edge-case verification.
+- **Full Supabase PostgreSQL Persistence**: All products, variants, orders, order items, and customer profiles are stored and linked with active Row Level Security (RLS) policies.
+- **Google OAuth SSO & Email Auth**: Seamless customer sign-in via Supabase Auth with Google OAuth (popup flow with cross-origin `postMessage` synchronization), Email Password, and Magic Link authentication.
+- **Transactional Confirmation Emails (Resend)**: Automated branded HTML order receipts dispatched server-side via Resend with order reference (`NOVA-2026-XXXX`), line items, and delivery addresses. Includes an in-app email preview inspector.
+- **Mobile Application (Expo / React Native)**: Complete mobile application located in `/mobile` sharing the exact same Supabase database and authentication backend.
 
 ---
 
@@ -29,34 +35,52 @@ Built with **React**, **TypeScript**, **Tailwind CSS**, **Supabase PostgreSQL & 
 | **Mobile Frontend** | React Native, Expo, TypeScript, Supabase JS Client |
 | **Backend & API** | Express.js, Node.js (Vite SSR/SPA Middleware) |
 | **Database & Auth** | Supabase (PostgreSQL 15), Supabase Auth (Google OAuth), Row Level Security (RLS) |
-| **Transactional Email** | Resend API (Server-side abstraction) |
+| **Transactional Email** | Resend API (Server-side abstraction via `/api/send-email`) |
 | **Payment Provider** | Abstracted Payment Service (`MockNigerianPaymentProvider`) |
+| **Currency Engine** | Centralized Nigerian Naira (`formatNaira`) formatting with USD conversion toggle |
 
 ---
 
-## 3. Project Architecture
+## 3. Project Directory Structure
 
 ```
-├── .env.example              # Documented environment variables
-├── AGENTS.md                 # Technical guide for AI coding agents
-├── CONTEXT.md                # Project status and milestone tracker
-├── README.md                 # Complete documentation
-├── server.ts                 # Full-stack server & Resend email endpoints
-├── index.html                # Entry point with Cormorant Garamond typography
-├── package.json              # Web dependencies and build scripts
+/
+├── server.ts                  # Full-stack Node/Express server & Resend email endpoints
+├── index.html                 # Web HTML entry point with Plus Jakarta Sans & Outfit fonts
+├── package.json               # Full-stack dependencies & scripts ("dev": "tsx server.ts")
+├── metadata.json              # Studio project metadata
 ├── supabase/
-│   └── schema.sql            # Full PostgreSQL DDL, RLS policies & seed data
+│   └── schema.sql             # Authoritative PostgreSQL schema, triggers, RLS, & seed data
 ├── src/
-│   ├── components/           # UI Components (Header, Hero, ProductCard, Checkout, etc.)
-│   ├── context/              # React Contexts (AuthContext, CartContext)
-│   ├── data/                 # Seed catalogue & Nigerian delivery rates
-│   ├── lib/                  # Supabase client singleton & configuration
-│   ├── services/             # Product, Payment, Email, Order services
-│   └── types/                # TypeScript interfaces & types
-└── mobile/                   # Standalone Expo React Native application
-    ├── App.tsx               # Mobile app with Home, Catalogue, Cart, Checkout, Orders
-    ├── app.json              # Expo configuration
-    └── package.json          # React Native dependencies
+│   ├── types/index.ts         # Central TypeScript interfaces (Product, CartItem, Order, Profile)
+│   ├── lib/supabase.ts        # Supabase client singleton with fallback resilience
+│   ├── data/seedData.ts       # Products, categories, Nigerian delivery rates, brand provenance
+│   ├── services/
+│   │   ├── productService.ts  # Catalog queries with Supabase first + local cache fallback
+│   │   ├── paymentService.ts  # Abstracted payment service (MockNigerianPaymentProvider)
+│   │   ├── emailService.ts    # Abstracted email service with Resend HTML generator
+│   │   └── orderService.ts    # Authoritative order creation, price verification, persistence
+│   ├── context/
+│   │   ├── AuthContext.tsx    # Supabase session, Google OAuth popup, and customer state
+│   │   └── CartContext.tsx    # Cart state, quantities, Nigerian state delivery selector
+│   ├── utils/
+│   │   └── formatters.ts      # Centralized formatNaira currency formatter
+│   └── components/
+│       ├── Header.tsx         # Modern announcement bar, logo, search, and navigation
+│       ├── Hero.tsx           # Summer sale editorial campaign hero banner
+│       ├── ProductCard.tsx    # Clean card with image, rating, reviews, and quick add
+│       ├── ProductDetailsModal.tsx # Full PDP with variants, stock counter, and specs
+│       ├── CartDrawer.tsx     # Slide-over cart with live delivery fee calculator
+│       ├── CheckoutView.tsx   # Checkout with Nigerian addresses and test gateway
+│       ├── OrderConfirmationModal.tsx # Post-order celebration & HTML email inspector
+│       ├── OrderHistoryView.tsx # Customer account dashboard with order history
+│       ├── AuthModal.tsx      # Google OAuth and email sign-in / registration
+│       └── Footer.tsx         # Editorial provenance and contact information
+└── mobile/
+    ├── App.tsx                # Complete React Native / Expo mobile app
+    ├── app.json               # Expo mobile configuration
+    ├── package.json           # React Native dependencies
+    └── src/services/supabase.ts # Mobile client connected to same Supabase backend
 ```
 
 ---
@@ -85,14 +109,14 @@ PORT=3000
 VITE_SUPABASE_URL="https://your-project.supabase.co"
 VITE_SUPABASE_ANON_KEY="your-anon-key"
 RESEND_API_KEY="re_your_resend_key"
-RESEND_FROM_EMAIL="ÈDÁ Artisanal Living <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="Nova Stores <onboarding@resend.dev>"
 ```
 
 ### 3. Database Initialization (Supabase)
 1. Go to your [Supabase Dashboard](https://supabase.com/dashboard).
 2. Open the **SQL Editor** on the left sidebar.
 3. Open `supabase/schema.sql` from this repository, copy its entire contents, paste into the SQL editor, and click **Run**.
-4. This creates all tables (`profiles`, `products`, `product_variants`, `carts`, `cart_items`, `orders`, `order_items`), configures Row Level Security (RLS), and inserts the initial Nigerian fragrance catalogue.
+4. This creates all tables (`profiles`, `products`, `product_variants`, `carts`, `cart_items`, `orders`, `order_items`), configures Row Level Security (RLS), and inserts the initial multi-category catalogue.
 
 ---
 
@@ -104,20 +128,20 @@ To enable live Google Sign-In with Supabase Auth:
    - Go to [Google Cloud Console](https://console.cloud.google.com).
    - Create a project or select an existing project.
    - Go to **APIs & Services** > **OAuth consent screen**.
-   - Select **External** and provide App name (`ÈDÁ Artisanal Living`), user support email, and developer contact.
+   - Select **External** and provide App name (`Nova Stores`), user support email, and developer contact.
    - Go to **Credentials** > **Create Credentials** > **OAuth Client ID**.
    - Application Type: **Web application**.
    - In **Authorized redirect URIs**, enter your Supabase Auth callback URL:
      `https://<your-supabase-project-id>.supabase.co/auth/v1/callback`
+   - In **Authorized JavaScript origins**, add your Supabase URL and app URL.
    - Copy the generated **Client ID** and **Client Secret**.
 
 2. **Supabase Dashboard**:
    - Go to your Supabase Project > **Authentication** > **Providers** > **Google**.
    - Toggle **Google Enabled**.
    - Paste the **Client ID** and **Client Secret** obtained from Google Cloud.
+   - Under **Authentication** > **URL Configuration**, add your redirect URLs (e.g. `https://your-app-url/**`).
    - Save.
-
-*Note: For instant local testing or demonstrations where external Google credentials have not been configured, the application includes a 1-click **Demo Patron Switcher** in the sign-in modal.*
 
 ---
 
@@ -128,10 +152,10 @@ To enable live Google Sign-In with Supabase Auth:
 3. Add the key to `.env`:
    ```env
    RESEND_API_KEY="re_..."
-   RESEND_FROM_EMAIL="onboarding@resend.dev"
+   RESEND_FROM_EMAIL="Nova Stores <onboarding@resend.dev>"
    ```
 4. If testing with `onboarding@resend.dev`, you can send emails to the email address registered with your Resend account.
-5. To send to arbitrary patron emails in production, verify your custom domain in Resend (**Domains** > **Add Domain** > Add DNS records) and update `RESEND_FROM_EMAIL` to `orders@yourdomain.ng`.
+5. In production, verify your custom domain in Resend (**Domains** > **Add Domain** > Add DNS records) and update `RESEND_FROM_EMAIL` to `orders@novatrend.store`.
 
 ---
 
@@ -153,45 +177,26 @@ Use the Expo Go app on iOS or Android, or press `a` for Android Emulator or `w` 
 
 ---
 
-## 8. Verifying the 19-Step Critical User Journey
+## 8. Verifying the End-to-End Customer Journey
 
-1. **Visit the store**: Open `http://localhost:3000`. You will see the ÈDÁ Artisanal Living homepage.
-2. **Sign in**: Click "Sign In", authenticate with Google (or select Demo Patron Adebayo Alabi).
-3. **Browse products**: Scroll down to the Sanctuary Collection; test search and category filters.
-4. **Open a product**: Click on "Zobo & Royal Oud Artisanal Candle" to open the detail view.
-5. **Add to cart**: Select a variant and click "Add to Bag".
-6. **Manage cart**: In the Cart Drawer, use steppers to change quantity. Notice stock limits are enforced.
-7. **Proceed to checkout**: Click "Proceed to Checkout".
-8. **Enter delivery information**: Fill in name, Nigerian phone number, and delivery street address; select state (e.g. Lagos Mainland).
-9. **Complete mock payment**: Click "Authorize Test Payment".
-10. **Order creation**: The order is validated authoritative on the server and created in the database.
-11. **Cart is cleared**: The shopping bag automatically resets.
-12. **Confirmation email sent**: Server sends the HTML receipt through Resend.
-13. **Order confirmation**: View the confirmation screen with the reference number (e.g. `EDA-2026-8941`).
-14. **Inspect Email**: Click "Inspect Resend HTML Email" to see the responsive transactional receipt.
-15. **Open order history**: Click "View Order History".
-16. **Open individual order**: Review order status, line items, and delivery information.
-17. **Sign out**: Click "Sign Out".
-18. **Reopen application / Refresh page**: Refresh the browser.
-19. **Sign in again**: Sign in as Adebayo Alabi. Your previous order is still preserved!
+1. **Visit the Store**: Open `http://localhost:3000`. You will see the Nova Stores (NovaTrend) homepage with summer deals and trending categories.
+2. **Sign In**: Click "Account / Sign In", authenticate with Google OAuth or enter your email.
+3. **Browse Catalog**: Filter by category (Fashion, Electronics, Beauty, Fitness, Home Decor, Accessories) or use the search bar.
+4. **Open a Product**: Click on any product (e.g. "Essential Hoodie" or "Wireless Headphones") to view variants and stock counts.
+5. **Add to Cart**: Select a variant (e.g. Size M) and click "Add to Cart".
+6. **Manage Cart**: In the Cart Drawer, use steppers to adjust quantities. Stock limits are enforced in real-time.
+7. **Proceed to Checkout**: Click "Proceed to Checkout".
+8. **Delivery Information**: Fill in recipient name, phone, and delivery address; select state (e.g. Lagos Island, Abuja, or Rivers). Delivery fees update automatically.
+9. **Complete Payment**: Click "Authorize Test Payment" to run through the test payment provider.
+10. **Order Confirmation**: View the modern confirmation screen with your reference number (e.g. `NOVA-2026-8941`), purchased items, and delivery summary.
+11. **Inspect Email**: Click "Inspect Resend HTML Email" to see the responsive transactional receipt.
+12. **View Order History**: Open your account dashboard to see all past orders persisted in Supabase PostgreSQL.
 
 ---
 
-## 9. Deployment to Production
+## 9. Security & Production Guarantees
 
-### Web Deployment (Vercel)
-1. Push your repository to GitHub.
-2. Import the project into [Vercel](https://vercel.com).
-3. In Project Settings > Environment Variables, add:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - `RESEND_API_KEY`
-   - `RESEND_FROM_EMAIL`
-   - `APP_URL` (your Vercel deployment URL)
-4. Deploy.
-
-### Security Guarantees
-- No `.env` secrets committed to GitHub.
-- Supabase Service Role Key is never exposed to the browser or mobile client.
-- Row Level Security (RLS) guarantees users can never query another patron's orders.
-- Server validates item prices and totals authoritatively.
+- No secrets or private keys are ever committed to source control.
+- Supabase Service Role Key is never exposed to the client.
+- Row Level Security (RLS) ensures users can only read their own private data and orders.
+- Item prices and totals are verified and recalculated authoritatively on the server.

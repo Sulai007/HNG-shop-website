@@ -43,7 +43,7 @@ app.post('/api/send-email', async (req: Request, res: Response): Promise<void> =
   const isCustomDomain = rawFromEmail && !rawFromEmail.includes('@gmail.com') && !rawFromEmail.includes('@yahoo.com') && !rawFromEmail.includes('@hotmail.com');
   const fromEmail = isCustomDomain 
     ? rawFromEmail 
-    : 'ÈDÁ Artisanal Living <onboarding@resend.dev>';
+    : 'Nova Stores <onboarding@resend.dev>';
 
   if (!resendApiKey || resendApiKey === 'MY_RESEND_API_KEY') {
     console.log(`[EmailService] Resend API key not configured. Mocking email delivery to ${to}`);
@@ -66,7 +66,7 @@ app.post('/api/send-email', async (req: Request, res: Response): Promise<void> =
       body: JSON.stringify({
         from: fromEmail,
         to: [to],
-        subject: subject || 'Order Confirmation - ÈDÁ Artisanal Living',
+        subject: subject || 'Order Confirmation - Nova Stores',
         html,
       }),
     });
@@ -106,12 +106,12 @@ app.get(['/auth/callback', '/auth/callback/'], (_req: Request, res: Response) =>
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Authenticating with ÈDÁ...</title>
+        <title>Authenticating with Nova Stores...</title>
       </head>
-      <body style="font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #FAF8F5; color: #2C241E;">
+      <body style="font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #F8FAFC; color: #0F172A;">
         <div style="text-align: center; padding: 24px;">
-          <h2 style="font-weight: 500;">Authentication Successful</h2>
-          <p style="color: #695E54; font-size: 14px;">Syncing patron credentials with ÈDÁ Atelier...</p>
+          <h2 style="font-weight: 700; color: #0F172A;">Authentication Successful</h2>
+          <p style="color: #64748B; font-size: 14px;">Syncing your account with Nova Stores...</p>
         </div>
         <script>
           try {
@@ -119,10 +119,10 @@ app.get(['/auth/callback', '/auth/callback/'], (_req: Request, res: Response) =>
               window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', hash: window.location.hash, search: window.location.search }, '*');
               setTimeout(() => window.close(), 600);
             } else {
-              window.location.href = '/';
+              window.location.href = '/' + window.location.hash + window.location.search;
             }
           } catch (e) {
-            window.location.href = '/';
+            window.location.href = '/' + window.location.hash + window.location.search;
           }
         </script>
       </body>
@@ -170,7 +170,7 @@ async function startServer() {
 
   app.listen(PORT, () => {
     console.log(`\n=================================================`);
-    console.log(`ÈDÁ Artisanal Living Server running on port ${PORT}`);
+    console.log(`Nova Stores Server running on port ${PORT}`);
     console.log(`http://localhost:${PORT}`);
     console.log(`=================================================\n`);
   });

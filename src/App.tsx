@@ -1,11 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
+import { CategoryShowcase } from './components/CategoryShowcase';
 import { ProductCard } from './components/ProductCard';
+import { BestSellersSection } from './components/BestSellersSection';
+import { PromoBanners } from './components/PromoBanners';
 import { ProductDetailsModal } from './components/ProductDetailsModal';
 import { CartDrawer } from './components/CartDrawer';
+import { WishlistDrawer } from './components/WishlistDrawer';
+import { SearchModal } from './components/SearchModal';
 import { CheckoutView } from './components/CheckoutView';
 import { OrderConfirmationModal } from './components/OrderConfirmationModal';
 import { OrderHistoryView } from './components/OrderHistoryView';
@@ -13,21 +18,28 @@ import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 import { productService } from './services/productService';
 import { Product, Order } from './types';
-import { Search, SlidersHorizontal, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { formatNaira } from './utils/formatters';
 
 function StorefrontContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'featured' | 'price_asc' | 'price_desc'>('featured');
-  
-  // Navigation / Modal States
+  const [currency, setCurrency] = useState<'USD' | 'NGN'>('NGN');
+  const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
+
+  // Views & Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentView, setCurrentView] = useState<'store' | 'checkout' | 'account'>('store');
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
+  // New Arrivals carousel scroll ref
+  const newArrivalsScrollRef = useRef<HTMLDivElement>(null);
+
+  // Load catalog on mount and attempt auto-seed if needed
   useEffect(() => {
     async function loadCatalogue() {
       setLoading(true);
@@ -41,39 +53,69 @@ function StorefrontContent() {
       }
     }
     loadCatalogue();
+
+    // Load persisted wishlist
+    try {
+      const savedWishlist = localStorage.getItem('novatrend_wishlist');
+      if (savedWishlist) {
+        setWishlistedIds(new Set(JSON.parse(savedWishlist)));
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
 
-  // Filter & Sort Logic
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter((p) => {
-        const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
-        const matchesSearch =
-          searchQuery.trim() === '' ||
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'price_asc') return a.price - b.price;
-        if (sortBy === 'price_desc') return b.price - a.price;
-        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-      });
-  }, [products, activeCategory, searchQuery, sortBy]);
+  const handleToggleWishlist = (product: Product) => {
+    setWishlistedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(product.id)) {
+        next.delete(product.id);
+      } else {
+        next.add(product.id);
+      }
+      localStorage.setItem('novatrend_wishlist', JSON.stringify([...next]));
+      return next;
+    });
+  };
 
-  const categories = [
-    { id: 'all', label: 'All Sanctuary Pieces' },
-    { id: 'candles', label: 'Artisanal Candles' },
-    { id: 'diffusers', label: 'Reed Diffusers' },
-    { id: 'room_mists', label: 'Room Mists' },
-    { id: 'ceramic_vessels', label: 'Ceramic Vessels' },
-  ];
+  const wishlistProducts = useMemo(() => {
+    return products.filter((p) => wishlistedIds.has(p.id));
+  }, [products, wishlistedIds]);
+
+  // Centralized Currency Price Formatter helper (Naira primary)
+  const formatPrice = formatNaira;
+
+  // Floating items for Hero (matching screenshot)
+  const floatingProducts = useMemo(() => {
+    const sneaker = products.find((p) => p.slug === 'air-max-270') || products[1] || products[0];
+    const headphones = products.find((p) => p.slug === 'wireless-headphones') || products[2] || products[0];
+    const smartwatch = products.find((p) => p.slug === 'smart-watch-series-9') || products[3] || products[0];
+    const bottle = products.find((p) => p.slug === 'stainless-steel-bottle') || products[4] || products[0];
+    return { sneaker, headphones, smartwatch, bottle };
+  }, [products]);
+
+  // New Arrivals products (matching screenshot)
+  const newArrivals = useMemo(() => {
+    const filtered = products.filter((p) => p.is_new_arrival || p.badge);
+    if (activeCategory === 'all') return filtered;
+    return filtered.filter((p) => p.category.toLowerCase() === activeCategory.toLowerCase());
+  }, [products, activeCategory]);
+
+  const handleScrollCarousel = (direction: 'left' | 'right') => {
+    if (newArrivalsScrollRef.current) {
+      const { scrollLeft, clientWidth } = newArrivalsScrollRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      newArrivalsScrollRef.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1E1B18] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FBFBFB] text-[#111827] flex flex-col font-sans">
       
-      {/* 3-Zone Navigation Header */}
+      {/* Header */}
       <Header
         activeCategory={activeCategory}
         onSelectCategory={(cat) => {
@@ -82,169 +124,237 @@ function StorefrontContent() {
         }}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onOpenAccount={() => setCurrentView('account')}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        currency={currency}
+        onToggleCurrency={() => setCurrency((prev) => (prev === 'USD' ? 'NGN' : 'USD'))}
+        wishlistCount={wishlistedIds.size}
+        onOpenWishlist={() => setIsWishlistOpen(true)}
       />
 
-      {/* Main Body Routing */}
+      {/* Main Store View */}
       <main className="flex-1">
         {currentView === 'store' && (
           <>
-            {/* Hero Section */}
+            {/* 1. Hero Section */}
             <Hero
+              onShopNowClick={() => {
+                const el = document.getElementById('new_arrivals');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
               onExploreClick={() => {
-                const el = document.getElementById('catalogue-section');
+                const el = document.getElementById('categories');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onSelectProduct={(p) => setSelectedProduct(p)}
+              currency={currency}
+              formatPrice={formatPrice}
+              floatingProducts={floatingProducts}
+            />
+
+            {/* 2. Shop by Categories Section */}
+            <CategoryShowcase
+              activeCategory={activeCategory}
+              onSelectCategory={(cat) => {
+                setActiveCategory(cat);
+                const el = document.getElementById('new_arrivals');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
             />
 
-            {/* Product Catalogue Section */}
-            <section id="catalogue-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            {/* 3. New Arrivals Section (Exact replica of image) */}
+            <section id="new_arrivals" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-100">
               
-              {/* Section Header & Subtitle */}
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#E8E2D8]">
+              {/* Header with Carousel Navigation Controls */}
+              <div className="flex items-center justify-between mb-8 pb-2">
                 <div>
-                  <span className="text-xs uppercase tracking-widest text-[#786B60] font-mono">
-                    Artisanal Formulary · Lagos Atelier
-                  </span>
-                  <h2 className="mt-1 text-3xl sm:text-4xl font-serif font-semibold text-[#1E1B18]">
-                    The Sanctuary Collection
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-950 font-heading tracking-tight">
+                    New Arrivals
                   </h2>
+                  {activeCategory !== 'all' && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-500">Filtered by: <strong>{activeCategory}</strong></span>
+                      <button
+                        onClick={() => setActiveCategory('all')}
+                        className="text-xs text-[#EA580C] hover:underline"
+                      >
+                        Reset Filter
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Filter and Discovery Controls (Segmented Tabs & Search) */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  {/* Search Input */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#7A6F65]" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search botanicals, notes..."
-                      className="pl-9 pr-3 py-2 text-xs bg-[#FFFFFF] border border-[#D9D2C7] focus:outline-none focus:border-[#2C241E] w-full sm:w-56"
-                    />
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleScrollCarousel('left')}
+                      className="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors shadow-2xs"
+                      aria-label="Previous items"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleScrollCarousel('right')}
+                      className="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors shadow-2xs"
+                      aria-label="Next items"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  {/* Sort Selector */}
-                  <select
-                    value={sortBy}
-                    onChange={(e: any) => setSortBy(e.target.value)}
-                    className="py-2 px-3 text-xs bg-[#FFFFFF] border border-[#D9D2C7] text-[#2C241E] focus:outline-none focus:border-[#2C241E]"
+                  <button
+                    onClick={() => setActiveCategory('all')}
+                    className="text-xs sm:text-sm font-semibold text-gray-600 hover:text-black flex items-center gap-1.5 transition-colors hidden sm:flex ml-2"
                   >
-                    <option value="featured">Featured First</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                  </select>
+                    <span>View All New Arrivals</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Category Segmented Tabs (Compliant with Frontend Design button tab rules) */}
-              <div className="flex items-center gap-2 overflow-x-auto py-6 scrollbar-none border-b border-[#E8E2D8]">
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`px-4 py-2 text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors border ${
-                      activeCategory === cat.id
-                        ? 'bg-[#2C241E] text-[#FAF8F5] border-[#2C241E]'
-                        : 'bg-[#FFFFFF] text-[#594E45] border-[#E8E2D8] hover:border-[#8C8075]'
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
+              {/* 6 Products Carousel / Horizontal Grid */}
+              <div
+                ref={newArrivalsScrollRef}
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5 overflow-x-auto pb-4 scrollbar-none"
+              >
+                {newArrivals.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onSelect={(p) => setSelectedProduct(p)}
+                    currency={currency}
+                    formatPrice={formatPrice}
+                    isWishlisted={wishlistedIds.has(product.id)}
+                    onToggleWishlist={handleToggleWishlist}
+                  />
                 ))}
               </div>
 
-              {/* Product Grid */}
-              <div className="pt-10">
-                {loading ? (
-                  <div className="py-24 text-center space-y-3">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#2C241E]" />
-                    <p className="font-mono text-xs text-[#7A6F65]">Curating artisanal batches from Lagos...</p>
-                  </div>
-                ) : filteredProducts.length === 0 ? (
-                  <div className="py-20 text-center space-y-3 bg-[#FFFFFF] border border-[#E8E2D8] p-8">
-                    <p className="font-serif text-lg text-[#2C241E]">No sanctuary pieces match your search</p>
-                    <p className="text-xs text-[#7A6F65]">Try selecting another category or clearing your query.</p>
-                    <button
-                      onClick={() => {
-                        setActiveCategory('all');
-                        setSearchQuery('');
-                      }}
-                      className="mt-3 px-6 py-2 bg-[#2C241E] text-[#FAF8F5] text-xs uppercase font-mono tracking-wider"
-                    >
-                      Reset Filters
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-                    {filteredProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onSelect={(p) => setSelectedProduct(p)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
             </section>
 
-            {/* Atelier Provenance & Craft Story Section */}
-            <section className="bg-[#EDE6DC] py-20 border-t border-[#E8E2D8]">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-2xl mx-auto text-center space-y-4">
-                  <span className="text-xs font-mono uppercase tracking-widest text-[#786B60]">
-                    Our Philosophy · ÌLÉ & ẸRÚ
-                  </span>
-                  <h3 className="text-3xl font-serif font-semibold text-[#1E1B18]">
-                    Rooted in West African Botanical Heritage
-                  </h3>
-                  <p className="text-sm text-[#594E45] leading-relaxed">
-                    Every candle vessel is either hand-thrown by master ceramists in Edo State or cast in weighted raw stoneware. We blend non-toxic coconut wax with indigenous plant extracts, cured vanilla orchids, and sacred resin woods.
-                  </p>
-                </div>
-              </div>
-            </section>
+            {/* 4. Best Sellers Section */}
+            <BestSellersSection
+              products={products}
+              onSelectProduct={(p) => setSelectedProduct(p)}
+              formatPrice={formatPrice}
+              onViewAllClick={() => {
+                const el = document.getElementById('new_arrivals');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onToggleWishlist={handleToggleWishlist}
+              wishlistedIds={wishlistedIds}
+            />
+
+            {/* 5. Dual Promotional Banners & Bottom Trust Bar */}
+            <PromoBanners
+              onShopSaleClick={() => {
+                const el = document.getElementById('new_arrivals');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onShopCollectionClick={() => {
+                setActiveCategory('Fitness');
+                const el = document.getElementById('new_arrivals');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+            />
           </>
         )}
 
-        {/* Checkout Page */}
+        {/* Checkout View */}
         {currentView === 'checkout' && (
           <CheckoutView
-            onBackToShopping={() => setCurrentView('store')}
+            onBackToShopping={() => {
+              setSelectedProduct(null);
+              setCurrentView('store');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onOrderCompleted={(newOrder) => {
               setConfirmedOrder(newOrder);
+              setSelectedProduct(null);
               setCurrentView('store');
             }}
+            currency={currency}
+            formatPrice={formatPrice}
           />
         )}
 
-        {/* Order History / Account View */}
+        {/* Account / Order History View */}
         {currentView === 'account' && (
           <OrderHistoryView
-            onBackToShopping={() => setCurrentView('store')}
+            onBackToShopping={() => {
+              setSelectedProduct(null);
+              setCurrentView('store');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onOpenOrderConfirmation={(order) => setConfirmedOrder(order)}
           />
         )}
       </main>
 
-      {/* Product Details Modal */}
-      <ProductDetailsModal
-        product={selectedProduct}
-        allProducts={products}
-        onClose={() => setSelectedProduct(null)}
-        onSelectProduct={(p) => setSelectedProduct(p)}
-      />
+      {/* Product Details Modal - strictly mounted only on store view */}
+      {currentView === 'store' && selectedProduct && (
+        <ProductDetailsModal
+          product={selectedProduct}
+          allProducts={products}
+          onClose={() => setSelectedProduct(null)}
+          onSelectProduct={(p) => setSelectedProduct(p)}
+          onBuyNow={() => {
+            setSelectedProduct(null);
+            setCurrentView('checkout');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          currency={currency}
+          formatPrice={formatPrice}
+          isWishlisted={wishlistedIds.has(selectedProduct.id)}
+          onToggleWishlist={handleToggleWishlist}
+        />
+      )}
 
       {/* Cart Drawer */}
       <CartDrawer
-        onProceedToCheckout={() => setCurrentView('checkout')}
+        onProceedToCheckout={() => {
+          setSelectedProduct(null); // Ensure product modal is cleared
+          setIsSearchOpen(false);
+          setIsWishlistOpen(false);
+          setCurrentView('checkout');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onExploreProducts={() => {
+          setSelectedProduct(null);
           if (currentView !== 'store') setCurrentView('store');
-          const el = document.getElementById('catalogue-section');
+          const el = document.getElementById('new_arrivals');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
+        currency={currency}
+        formatPrice={formatPrice}
+      />
+
+      {/* Wishlist Drawer */}
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        wishlistProducts={wishlistProducts}
+        onRemoveFromWishlist={(id) => {
+          setWishlistedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            localStorage.setItem('novatrend_wishlist', JSON.stringify([...next]));
+            return next;
+          });
+        }}
+        onSelectProduct={(p) => {
+          setSelectedProduct(p);
+          setIsWishlistOpen(false);
+        }}
+        formatPrice={formatPrice}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        products={products}
+        onSelectProduct={(p) => setSelectedProduct(p)}
+        formatPrice={formatPrice}
       />
 
       {/* Order Confirmation Modal */}
@@ -263,12 +373,12 @@ function StorefrontContent() {
         onClose={() => setIsAuthModalOpen(false)}
       />
 
-      {/* Editorial Footer */}
+      {/* Footer */}
       <Footer
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
           if (currentView !== 'store') setCurrentView('store');
-          const el = document.getElementById('catalogue-section');
+          const el = document.getElementById('new_arrivals');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
       />

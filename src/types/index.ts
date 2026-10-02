@@ -22,20 +22,22 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
-  price: number; // in NGN (Nigerian Naira)
-  category: 'candles' | 'diffusers' | 'room_mists' | 'ceramic_vessels';
-  scent_profile: {
-    top: string[];
-    heart: string[];
-    base: string[];
-  };
-  burn_time?: string;
-  volume?: string;
+  tagline?: string;
+  price: number; // base price
+  original_price?: number;
+  category: 'Fashion' | 'Electronics' | 'Beauty' | 'Fitness' | 'Home Decor' | 'Accessories' | string;
+  rating?: number;
+  reviews_count?: number;
+  badge?: string; // e.g. "New", "-20%", "Bestseller"
   image_url: string;
+  secondary_image?: string;
   stock_quantity: number;
   active: boolean;
   featured?: boolean;
+  is_bestseller?: boolean;
+  is_new_arrival?: boolean;
   variants?: ProductVariant[];
+  colors?: string[];
   created_at?: string;
 }
 

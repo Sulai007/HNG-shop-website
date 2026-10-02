@@ -1,7 +1,60 @@
 import { NigerianDeliveryState, Product } from '../types';
 
+export interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  itemCount: number;
+}
+
+export const CATEGORIES: CategoryItem[] = [
+  {
+    id: 'cat_fashion',
+    name: 'Fashion',
+    slug: 'fashion',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80',
+    itemCount: 48,
+  },
+  {
+    id: 'cat_electronics',
+    name: 'Electronics',
+    slug: 'electronics',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80',
+    itemCount: 36,
+  },
+  {
+    id: 'cat_beauty',
+    name: 'Beauty',
+    slug: 'beauty',
+    image: 'https://images.unsplash.com/photo-1608248597359-5975549e5d48?auto=format&fit=crop&w=600&q=80',
+    itemCount: 24,
+  },
+  {
+    id: 'cat_fitness',
+    name: 'Fitness',
+    slug: 'fitness',
+    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80',
+    itemCount: 32,
+  },
+  {
+    id: 'cat_home',
+    name: 'Home Decor',
+    slug: 'home-decor',
+    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80',
+    itemCount: 29,
+  },
+  {
+    id: 'cat_accessories',
+    name: 'Accessories',
+    slug: 'accessories',
+    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80',
+    itemCount: 42,
+  },
+];
+
 export const NIGERIAN_STATES: NigerianDeliveryState[] = [
-  { code: 'LA_MAIN', name: 'Lagos (Mainland)', delivery_fee: 3500, estimated_days: '1–2 business days' },
+  { code: 'LA_MAIN', name: 'Lagos (Mainland / Ikeja / Surulere)', delivery_fee: 3500, estimated_days: '1–2 business days' },
   { code: 'LA_ISL', name: 'Lagos (Island / Lekki / Ikoyi / VI)', delivery_fee: 3500, estimated_days: 'Same day or next day' },
   { code: 'ABJ', name: 'Abuja (Federal Capital Territory)', delivery_fee: 5500, estimated_days: '2–3 business days' },
   { code: 'RIV', name: 'Rivers (Port Harcourt)', delivery_fee: 6000, estimated_days: '2–4 business days' },
@@ -13,291 +66,306 @@ export const NIGERIAN_STATES: NigerianDeliveryState[] = [
   { code: 'EDO', name: 'Edo (Benin City)', delivery_fee: 5500, estimated_days: '3–5 business days' },
   { code: 'KAN', name: 'Kano', delivery_fee: 7000, estimated_days: '3–5 business days' },
   { code: 'KAD', name: 'Kaduna', delivery_fee: 7000, estimated_days: '3–5 business days' },
-  { code: 'OTH', name: 'Other Nigerian States (Nationwide Express)', delivery_fee: 7500, estimated_days: '4–6 business days' },
+  { code: 'OTH', name: 'Other States (Nationwide Express)', delivery_fee: 7500, estimated_days: '4–6 business days' },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
+  // 1. Essential Hoodie
   {
-    id: 'prod_zobo_oud',
-    name: 'Zobo & Royal Oud Artisanal Candle',
-    slug: 'zobo-royal-oud-candle',
-    description: 'A tribute to the vibrant soul of Lagos. Hand-poured in small batches using 100% natural coconut-soy wax, blending tart wild Nigerian hibiscus calyces (Zobo) with deep smoky Assam oud, crushed clove buds, and dark amber.',
-    price: 24500,
-    category: 'candles',
-    burn_time: '60+ hours',
-    scent_profile: {
-      top: ['Wild Hibiscus Calyces', 'Spiced Pomegranate', 'Blood Orange'],
-      heart: ['Dark Assam Oud', 'Crushed Clove Buds', 'Damask Rose'],
-      base: ['Smoked Birch', 'Golden Amber', 'Patchouli Leaf']
-    },
-    image_url: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 18,
+    id: 'prod_essential_hoodie',
+    name: 'Essential Hoodie',
+    slug: 'essential-hoodie',
+    category: 'Fashion',
+    description: 'Crafted from heavy 450gsm organic brushed French terry cotton. Features dropped shoulders, double-layered hood without drawstrings, and a kangaroo pouch pocket.',
+    tagline: 'Premium quality hoodie perfect for everyday wear.',
+    price: 78000, // ₦78,000
+    original_price: 105000,
+    rating: 4.9,
+    reviews_count: 128,
+    badge: 'New',
+    image_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 45,
     active: true,
     featured: true,
+    is_new_arrival: true,
+    is_bestseller: true,
+    colors: ['#D6C7B2', '#1E1E1E', '#9E9E9E'],
     variants: [
-      {
-        id: 'var_zo_standard',
-        product_id: 'prod_zobo_oud',
-        name: 'Vessel Size',
-        value: 'Standard 240g (Single Cotton Wick)',
-        price_adjustment: 0,
-        stock_quantity: 12
-      },
-      {
-        id: 'var_zo_grand',
-        product_id: 'prod_zobo_oud',
-        name: 'Vessel Size',
-        value: 'Grand 450g (Double Wooden Wick)',
-        price_adjustment: 9500,
-        stock_quantity: 6
-      }
-    ]
+      { id: 'v_eh_s', product_id: 'prod_essential_hoodie', name: 'Size', value: 'S (Small)', price_adjustment: 0, stock_quantity: 12 },
+      { id: 'v_eh_m', product_id: 'prod_essential_hoodie', name: 'Size', value: 'M (Medium)', price_adjustment: 0, stock_quantity: 18 },
+      { id: 'v_eh_l', product_id: 'prod_essential_hoodie', name: 'Size', value: 'L (Large)', price_adjustment: 0, stock_quantity: 10 },
+      { id: 'v_eh_xl', product_id: 'prod_essential_hoodie', name: 'Size', value: 'XL (Extra Large)', price_adjustment: 0, stock_quantity: 5 },
+    ],
   },
+
+  // 2. Air Max 270
   {
-    id: 'prod_calabar_cedar',
-    name: 'Calabar Cedar & Spiced Frankincense Mist',
-    slug: 'calabar-cedar-spiced-frankincense-mist',
-    description: 'An atmospheric room and linen elixir formulated with botanical alcohol and organic essential oils. Inspired by morning rain across the Cross River rainforests, cedar bark, and sacred incense resins.',
-    price: 18500,
-    category: 'room_mists',
-    volume: '150ml with fine mist atomizer',
-    scent_profile: {
-      top: ['Cardamom Pods', 'Rainwater Accord', 'Bergamot Zest'],
-      heart: ['Calabar Cedarwood', 'Frankincense Resin', 'Nutmeg'],
-      base: ['Haitian Vetiver', 'Warm Tobacco Leaf', 'Myrrh']
-    },
-    image_url: 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 24,
+    id: 'prod_air_max_270',
+    name: 'Air Max 270',
+    slug: 'air-max-270',
+    category: 'Fashion',
+    description: "Boasting Nike's biggest heel Air unit yet, delivering a super-soft ride that feels as impossible as it looks. Knit fabric upper with no-sew overlays for comfort and support.",
+    tagline: 'Iconic comfort meets modern style.',
+    price: 169000, // ₦169,000
+    original_price: 208000,
+    rating: 4.8,
+    reviews_count: 189,
+    badge: '-20%',
+    image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 28,
     active: true,
     featured: true,
+    is_new_arrival: true,
+    is_bestseller: true,
+    colors: ['#FFFFFF', '#FF4500', '#111111'],
     variants: [
-      {
-        id: 'var_cc_frosted',
-        product_id: 'prod_calabar_cedar',
-        name: 'Bottle Finish',
-        value: 'Frosted Glass with Matte Brass Sprayer',
-        price_adjustment: 0,
-        stock_quantity: 16
-      },
-      {
-        id: 'var_cc_amber',
-        product_id: 'prod_calabar_cedar',
-        name: 'Bottle Finish',
-        value: 'Apothecary Amber with Gunmetal Sprayer',
-        price_adjustment: 1500,
-        stock_quantity: 8
-      }
-    ]
+      { id: 'v_am_41', product_id: 'prod_air_max_270', name: 'Shoe Size', value: 'EU 41 / US 8', price_adjustment: 0, stock_quantity: 6 },
+      { id: 'v_am_42', product_id: 'prod_air_max_270', name: 'Shoe Size', value: 'EU 42 / US 8.5', price_adjustment: 0, stock_quantity: 8 },
+      { id: 'v_am_43', product_id: 'prod_air_max_270', name: 'Shoe Size', value: 'EU 43 / US 9.5', price_adjustment: 0, stock_quantity: 9 },
+      { id: 'v_am_44', product_id: 'prod_air_max_270', name: 'Shoe Size', value: 'EU 44 / US 10', price_adjustment: 0, stock_quantity: 5 },
+    ],
   },
+
+  // 3. Wireless Headphones
   {
-    id: 'prod_vanilla_amber_diffuser',
-    name: 'Nigerian Wild Vanilla & Raw Amber Reed Diffuser',
-    slug: 'nigerian-wild-vanilla-raw-amber-diffuser',
-    description: 'Continuous, flame-free sanctuary scenting. Our bespoke solvent-free diffusion blend features Madagascan & Nigerian cured vanilla pods steeped in warm Baltic amber and velvety benzoin gum. Includes 8 porous black reeds.',
-    price: 32000,
-    category: 'diffusers',
-    volume: '200ml (Diffuses for 4–5 months)',
-    scent_profile: {
-      top: ['Cured Vanilla Orchid', 'Golden Honeycomb', 'Almond Blossom'],
-      heart: ['Warm Baltic Amber', 'Benzoin Resin', 'Smoked Cinnamon'],
-      base: ['Sandalwood Cream', 'Tonka Bean', 'White Musk']
-    },
-    image_url: 'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 14,
+    id: 'prod_wireless_headphones',
+    name: 'Wireless Headphones',
+    slug: 'wireless-headphones',
+    category: 'Electronics',
+    description: 'Immersive soundstage with hybrid active noise cancellation, 40mm titanium drivers, and ultra-plush protein leather ear cushions. Up to 40 hours of battery life on a single charge.',
+    tagline: 'Crystal-clear acoustics with all-day comfort.',
+    price: 130000, // ₦130,000
+    original_price: 168000,
+    rating: 4.9,
+    reviews_count: 154,
+    badge: 'New',
+    image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 34,
     active: true,
     featured: true,
+    is_new_arrival: true,
+    is_bestseller: false,
+    colors: ['#171717', '#E5E5E5'],
     variants: [
-      {
-        id: 'var_va_amber',
-        product_id: 'prod_vanilla_amber_diffuser',
-        name: 'Glass Vessel',
-        value: 'Smoked Charcoal Flacon (8 Black Reeds)',
-        price_adjustment: 0,
-        stock_quantity: 9
-      },
-      {
-        id: 'var_va_clear',
-        product_id: 'prod_vanilla_amber_diffuser',
-        name: 'Glass Vessel',
-        value: 'Architectural Fluted Glass (8 Natural Reeds)',
-        price_adjustment: 3500,
-        stock_quantity: 5
-      }
-    ]
+      { id: 'v_wh_blk', product_id: 'prod_wireless_headphones', name: 'Color', value: 'Matte Obsidian Black', price_adjustment: 0, stock_quantity: 20 },
+      { id: 'v_wh_slv', product_id: 'prod_wireless_headphones', name: 'Color', value: 'Platinum Silver', price_adjustment: 6500, stock_quantity: 14 },
+    ],
   },
+
+  // 4. Smart Watch Series 9
   {
-    id: 'prod_benin_bronze_candle',
-    name: 'Benin Bronze Earth & Olibanum Candle',
-    slug: 'benin-bronze-earth-olibanum-candle',
-    description: 'Housed in a raw terracotta vessel thrown by ceramic artisans in Edo State. Scented with sun-baked laterite earth, ancient olibanum, charred fig wood, and earthy roasted cocoa husk.',
-    price: 28500,
-    category: 'candles',
-    burn_time: '75+ hours',
-    scent_profile: {
-      top: ['Sun-Baked Earth', 'Green Fig Leaf', 'Bitter Orange'],
-      heart: ['Ancient Olibanum', 'Roasted Cocoa Husk', 'Orris Root'],
-      base: ['Cedar Heartwood', 'Charred Oak', 'Raw Leather Accord']
-    },
-    image_url: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 10,
+    id: 'prod_smart_watch_series_9',
+    name: 'Smart Watch Series 9',
+    slug: 'smart-watch-series-9',
+    category: 'Electronics',
+    description: 'Always-On Retina display with up to 2000 nits brightness. Advanced health sensors, ECG app, blood oxygen tracking, crash detection, and water resistant to 50 meters.',
+    tagline: 'Your essential health & fitness companion.',
+    price: 260000, // ₦260,000
+    original_price: 305000,
+    rating: 4.9,
+    reviews_count: 103,
+    badge: '-15%',
+    image_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 19,
     active: true,
     featured: true,
+    is_new_arrival: true,
+    is_bestseller: false,
+    colors: ['#000000', '#F3F4F6'],
     variants: [
-      {
-        id: 'var_bb_terracotta',
-        product_id: 'prod_benin_bronze_candle',
-        name: 'Vessel Style',
-        value: 'Hand-Thrown Red Terracotta (320g)',
-        price_adjustment: 0,
-        stock_quantity: 6
-      },
-      {
-        id: 'var_bb_basalt',
-        product_id: 'prod_benin_bronze_candle',
-        name: 'Vessel Style',
-        value: 'Matte Basalt Black Clay (320g)',
-        price_adjustment: 2000,
-        stock_quantity: 4
-      }
-    ]
+      { id: 'v_sw_41', product_id: 'prod_smart_watch_series_9', name: 'Case Size', value: '41mm Midnight Aluminum', price_adjustment: 0, stock_quantity: 11 },
+      { id: 'v_sw_45', product_id: 'prod_smart_watch_series_9', name: 'Case Size', value: '45mm Midnight Aluminum', price_adjustment: 39000, stock_quantity: 8 },
+    ],
   },
+
+  // 5. Stainless Steel Bottle
   {
-    id: 'prod_shea_ginger_mist',
-    name: 'Lekki Solitude: Shea Blossom & Ginger Linen Mist',
-    slug: 'lekki-solitude-shea-blossom-ginger-mist',
-    description: 'Formulated to mist over fine Egyptian cotton sheets and loungewear. Delicately combines creamy Nigerian cold-pressed shea blossom, freshly bruised ginger root, and coastal morning dew.',
-    price: 19500,
-    category: 'room_mists',
-    volume: '150ml fine spray',
-    scent_profile: {
-      top: ['Fresh Nigerian Ginger', 'Pink Peppercorn', 'Dewy Bamboo'],
-      heart: ['Shea Blossom', 'White Lily of the Valley', 'Green Tea'],
-      base: ['Cashmere Wood', 'Clean White Musk', 'Shea Butter Cream']
-    },
-    image_url: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 20,
+    id: 'prod_stainless_steel_bottle',
+    name: 'Stainless Steel Bottle',
+    slug: 'stainless-steel-bottle',
+    category: 'Accessories',
+    description: 'Double-wall vacuum insulation keeps drinks ice cold for up to 24 hours and piping hot for 12 hours. Sweat-free powder coat finish with leak-proof flex cap.',
+    tagline: 'Stay hydrated with sustainable thermal insulation.',
+    price: 32500, // ₦32,500
+    original_price: 45000,
+    rating: 4.7,
+    reviews_count: 76,
+    badge: 'New',
+    image_url: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 60,
     active: true,
     featured: false,
+    is_new_arrival: true,
+    is_bestseller: false,
+    colors: ['#1C1917', '#38BDF8', '#F43F5E'],
     variants: [
-      {
-        id: 'var_sg_standard',
-        product_id: 'prod_shea_ginger_mist',
-        name: 'Size',
-        value: '150ml Travel & Linen Spray',
-        price_adjustment: 0,
-        stock_quantity: 20
-      }
-    ]
+      { id: 'v_sb_500', product_id: 'prod_stainless_steel_bottle', name: 'Volume', value: '500ml (17 oz)', price_adjustment: 0, stock_quantity: 35 },
+      { id: 'v_sb_750', product_id: 'prod_stainless_steel_bottle', name: 'Volume', value: '750ml (25 oz)', price_adjustment: 6500, stock_quantity: 25 },
+    ],
   },
+
+  // 6. Aviator Sunglasses
   {
-    id: 'prod_ikoyi_twilight_diffuser',
-    name: 'Ikoyi Twilight: Night Jasmine & Cypress Diffuser',
-    slug: 'ikoyi-twilight-jasmine-cypress-diffuser',
-    description: 'Evoking the warm, fragrant evening breeze drifting through the lush tree canopies of Old Ikoyi. Star jasmine blooming at dusk, green Italian cypress, and subtle wet stone.',
-    price: 34000,
-    category: 'diffusers',
-    volume: '200ml (Diffuses for 4–5 months)',
-    scent_profile: {
-      top: ['Night-Blooming Jasmine', 'Wild Bergamot', 'Green Leaf'],
-      heart: ['Italian Cypress', 'Tuberose Petals', 'Orange Blossom'],
-      base: ['Blonde Woods', 'Clean Patchouli', 'Crisp Amber']
-    },
-    image_url: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 11,
+    id: 'prod_aviator_sunglasses',
+    name: 'Aviator Sunglasses',
+    slug: 'aviator-sunglasses',
+    category: 'Accessories',
+    description: 'Timeless teardrop aviator silhouette crafted with lightweight monel alloy and scratch-resistant polarized crystal lenses. 100% UV400 radiation protection.',
+    tagline: 'Iconic eyewear engineered for clarity and style.',
+    price: 117000, // ₦117,000
+    original_price: 130000,
+    rating: 4.8,
+    reviews_count: 57,
+    badge: '-10%',
+    image_url: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 22,
     active: true,
     featured: false,
+    is_new_arrival: true,
+    is_bestseller: false,
+    colors: ['#D4AF37', '#1E293B'],
     variants: [
-      {
-        id: 'var_it_standard',
-        product_id: 'prod_ikoyi_twilight_diffuser',
-        name: 'Vessel',
-        value: 'Smoked Amber Apothecary Jar (200ml)',
-        price_adjustment: 0,
-        stock_quantity: 11
-      }
-    ]
+      { id: 'v_as_gold', product_id: 'prod_aviator_sunglasses', name: 'Frame', value: 'Polished Gold / G-15 Green', price_adjustment: 0, stock_quantity: 14 },
+      { id: 'v_as_black', product_id: 'prod_aviator_sunglasses', name: 'Frame', value: 'Matte Gunmetal / Polarized Grey', price_adjustment: 13000, stock_quantity: 8 },
+    ],
   },
+
+  // 7. Sony WH-1000XM5
   {
-    id: 'prod_raw_vessel_trio',
-    name: 'ÈDÁ Artisanal Studio Ceramic Vessels (Set of 3)',
-    slug: 'eda-artisanal-studio-ceramic-vessels-trio',
-    description: 'Handcrafted stoneware vessels designed to hold your candle refills or serve as sculptural interior pieces. Wheel-thrown by master Nigerian ceramists using local clay deposits.',
-    price: 42000,
-    category: 'ceramic_vessels',
-    volume: 'Set of 3 assorted heights (8cm, 11cm, 14cm)',
-    scent_profile: {
-      top: ['Mineral Stoneware', 'Unglazed Clay', 'Organic Tactility'],
-      heart: ['Hand-Carved Ridges', 'Earth Pigments', 'Stoneware'],
-      base: ['Natural Matte Finish', 'Heat Resistant', 'Dishwasher Safe']
-    },
-    image_url: 'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 8,
+    id: 'prod_sony_wh1000xm5',
+    name: 'Sony WH-1000XM5',
+    slug: 'sony-wh-1000xm5',
+    category: 'Electronics',
+    description: 'Two processors and eight microphones for unprecedented noise cancellation. Superb High-Resolution Audio with the newly developed 30mm precision driver unit.',
+    tagline: 'Industry-leading noise cancellation.',
+    price: 455000, // ₦455,000
+    original_price: 520000,
+    rating: 5.0,
+    reviews_count: 324,
+    badge: 'Bestseller',
+    image_url: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 16,
+    active: true,
+    featured: true,
+    is_new_arrival: false,
+    is_bestseller: true,
+    colors: ['#0A0A0A', '#E2D9CE'],
+    variants: [
+      { id: 'v_sony_blk', product_id: 'prod_sony_wh1000xm5', name: 'Edition', value: 'Black Edition', price_adjustment: 0, stock_quantity: 10 },
+      { id: 'v_sony_slv', product_id: 'prod_sony_wh1000xm5', name: 'Edition', value: 'Silver Sand', price_adjustment: 0, stock_quantity: 6 },
+    ],
+  },
+
+  // 8. Classic Hoodie
+  {
+    id: 'prod_classic_hoodie',
+    name: 'Classic Hoodie',
+    slug: 'classic-hoodie',
+    category: 'Fashion',
+    description: 'An enduring staple tailored with pre-shrunk heavyweight cotton fleece, reinforced rib cuffs, and a timeless relaxed fit.',
+    tagline: 'Premium quality hoodie perfect for everyday wear.',
+    price: 78000, // ₦78,000
+    original_price: 98000,
+    rating: 4.9,
+    reviews_count: 256,
+    badge: 'Bestseller',
+    image_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 50,
+    active: true,
+    featured: true,
+    is_new_arrival: false,
+    is_bestseller: true,
+    colors: ['#E6DACB', '#111827'],
+    variants: [
+      { id: 'v_ch_m', product_id: 'prod_classic_hoodie', name: 'Size', value: 'M', price_adjustment: 0, stock_quantity: 25 },
+      { id: 'v_ch_l', product_id: 'prod_classic_hoodie', name: 'Size', value: 'L', price_adjustment: 0, stock_quantity: 25 },
+    ],
+  },
+
+  // 9. Luxury Botanical Dropper Serum (Beauty)
+  {
+    id: 'prod_botanical_serum',
+    name: 'Radiance Peptide Botanical Serum',
+    slug: 'radiance-peptide-botanical-serum',
+    category: 'Beauty',
+    description: 'Potent vitamin C and antioxidant botanical complex formulated with hyaluronic acid and rosehip fruit extract. Deeply hydrates and visibly brightens skin tone.',
+    tagline: 'Ultra-concentrated restorative skin radiance.',
+    price: 58500, // ₦58,500
+    original_price: 78000,
+    rating: 4.9,
+    reviews_count: 112,
+    badge: 'Popular',
+    image_url: 'https://images.unsplash.com/photo-1608248597359-5975549e5d48?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 38,
     active: true,
     featured: false,
+    is_new_arrival: false,
+    is_bestseller: false,
     variants: [
-      {
-        id: 'var_rv_sandstone',
-        product_id: 'prod_raw_vessel_trio',
-        name: 'Glaze Finish',
-        value: 'Raw Sandstone Matte Glaze',
-        price_adjustment: 0,
-        stock_quantity: 5
-      },
-      {
-        id: 'var_rv_basalt',
-        product_id: 'prod_raw_vessel_trio',
-        name: 'Glaze Finish',
-        value: 'Volcanic Ash Black Finish',
-        price_adjustment: 4000,
-        stock_quantity: 3
-      }
-    ]
+      { id: 'v_bs_30', product_id: 'prod_botanical_serum', name: 'Volume', value: '30ml Dropper', price_adjustment: 0, stock_quantity: 25 },
+      { id: 'v_bs_50', product_id: 'prod_botanical_serum', name: 'Volume', value: '50ml Value Size', price_adjustment: 23400, stock_quantity: 13 },
+    ],
   },
+
+  // 10. Performance Seamless Workout Set (Fitness)
   {
-    id: 'prod_plateau_lavender_candle',
-    name: 'Jos Plateau Wild Lavender & Honey Candle',
-    slug: 'jos-plateau-wild-lavender-honey-candle',
-    description: 'Harvested from the temperate highland hills of the Jos Plateau. Wild French lavender hybrid infused with raw mountain acacia honey, dried chamomile blossoms, and soft cedar needles.',
-    price: 26000,
-    category: 'candles',
-    burn_time: '65+ hours',
-    scent_profile: {
-      top: ['Jos Highland Lavender', 'Wild Mountain Honey', 'Clary Sage'],
-      heart: ['Dried Chamomile', 'Violet Leaf', 'Eucalyptus'],
-      base: ['Acacia Wood', 'Golden Amber', 'Tonka Bean']
-    },
-    image_url: 'https://images.unsplash.com/photo-1572726729207-a78d6feb18d7?auto=format&fit=crop&w=800&q=80',
-    stock_quantity: 15,
+    id: 'prod_fitness_seamless_set',
+    name: 'Performance Seamless Active Set',
+    slug: 'performance-seamless-active-set',
+    category: 'Fitness',
+    description: 'Engineered high-waisted compressive leggings and supportive racerback sports bra. Four-way stretch moisture-wicking weave for peak athletic performance.',
+    tagline: 'High-performance comfort for training and studio.',
+    price: 97500, // ₦97,500
+    original_price: 125000,
+    rating: 4.8,
+    reviews_count: 94,
+    badge: 'Trending',
+    image_url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 26,
     active: true,
     featured: false,
+    is_new_arrival: false,
+    is_bestseller: false,
     variants: [
-      {
-        id: 'var_pl_amber',
-        product_id: 'prod_plateau_lavender_candle',
-        name: 'Vessel',
-        value: 'Heavy Weighted Amber Glass Jar (280g)',
-        price_adjustment: 0,
-        stock_quantity: 10
-      },
-      {
-        id: 'var_pl_white',
-        product_id: 'prod_plateau_lavender_candle',
-        name: 'Vessel',
-        value: 'Matte Chalk White Ceramic Jar (280g)',
-        price_adjustment: 2500,
-        stock_quantity: 5
-      }
-    ]
-  }
+      { id: 'v_fs_s', product_id: 'prod_fitness_seamless_set', name: 'Size', value: 'Small', price_adjustment: 0, stock_quantity: 8 },
+      { id: 'v_fs_m', product_id: 'prod_fitness_seamless_set', name: 'Size', value: 'Medium', price_adjustment: 0, stock_quantity: 12 },
+      { id: 'v_fs_l', product_id: 'prod_fitness_seamless_set', name: 'Size', value: 'Large', price_adjustment: 0, stock_quantity: 6 },
+    ],
+  },
+
+  // 11. Sculptural Oak Lounge Chair (Home Decor)
+  {
+    id: 'prod_sculptural_lounge_chair',
+    name: 'Sculptural Linen Accent Chair',
+    slug: 'sculptural-linen-accent-chair',
+    category: 'Home Decor',
+    description: 'Solid European white oak framing with textured bouclé linen upholstery. Ergonomically reclined for luxurious lounging in modern living spaces.',
+    tagline: 'Architectural minimalism crafted for timeless homes.',
+    price: 505000, // ₦505,000
+    original_price: 585000,
+    rating: 4.9,
+    reviews_count: 48,
+    badge: 'Exclusive',
+    image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
+    stock_quantity: 12,
+    active: true,
+    featured: false,
+    is_new_arrival: false,
+    is_bestseller: false,
+    variants: [
+      { id: 'v_lc_cream', product_id: 'prod_sculptural_lounge_chair', name: 'Fabric', value: 'Chalk Cream Bouclé', price_adjustment: 0, stock_quantity: 7 },
+      { id: 'v_lc_charcoal', product_id: 'prod_sculptural_lounge_chair', name: 'Fabric', value: 'Charcoal Textured Linen', price_adjustment: 26000, stock_quantity: 5 },
+    ],
+  },
 ];
 
 export const BRAND_STORY = {
-  name: 'ÈDÁ Artisanal Living',
-  tagline: 'Handcrafted Nigerian Home Fragrance & Botanical Living',
-  origin: 'Formulated & Hand-Poured in Lagos, Nigeria',
-  mission: 'We craft slow-luxury scent rituals using indigenous West African botanicals, artisanal ceramic vessels, and sustainable coconut-soy wax.',
+  name: 'NovaTrend',
+  tagline: 'Discover Products You\'ll Love',
+  origin: 'Lagos & Nationwide Nigeria Delivery',
+  mission: 'We curate trending products across fashion, electronics, fitness, beauty, and home with 100% verified authentic items.',
   currencySymbol: '₦',
-  contactEmail: 'concierge@eda-living.ng',
-  contactPhone: '+234 (0) 812 345 6789',
-  address: '14B Victoria Arobieke Street, Off Admiralty Way, Lekki Phase 1, Lagos, Nigeria'
+  contactEmail: 'support@novatrend.store',
+  contactPhone: '+234 812 345 6789 / +234 803 123 4567',
+  address: 'NovaTrend Hub, 14B Admiralty Way, Lekki Phase 1, Lagos, Nigeria',
 };

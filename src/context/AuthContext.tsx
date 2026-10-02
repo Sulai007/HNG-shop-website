@@ -1,22 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, supabaseUrl } from '../lib/supabase';
 import { Profile } from '../types';
 
 interface AuthContextType {
   user: Profile | null;
   loading: boolean;
   isConfigured: boolean;
-  signInWithGoogle: () => Promise<{ error: Error | null; url?: string }>;
+  signInWithGoogle: () => Promise<{ error: Error | null; unsupportedProvider?: boolean }>;
   signOut: () => Promise<void>;
-  signInWithDemoUser: (persona?: 'lagos' | 'abuja' | 'currentUser') => void;
+  signInWithDemoUser: (persona?: 'currentUser' | 'lagos' | 'abuja') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const DEMO_USERS: Record<'lagos' | 'abuja' | 'currentUser', Profile> = {
+export const DEMO_USERS: Record<'currentUser' | 'lagos' | 'abuja', Profile> = {
   currentUser: {
     id: 'usr_google_elevatepages_01',
-    full_name: 'Elevate Pages (Google Patron)',
+    full_name: 'Elevate Pages',
     email: 'elevatepages980@gmail.com',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     phone: '+234 812 345 6789',
@@ -42,42 +42,149 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const isConfigured = isSupabaseConfigured();
 
-  // Load persisted user on mount
+  // Helper to construct exact deployment callback URL
+  const getCallbackUrl = (): string => {
+    if (typeof window !== 'undefined') {
+      // In AI Studio, the development container (ais-dev-*.run.app) is protected by an internal auth bridge.
+      // Top-level popups redirected to ais-dev get intercepted and display "Forbidden".
+      // Directing the OAuth callback to the public shared app URL (ais-pre-*.run.app) ensures
+      // the popup loads the callback HTML cleanly and dispatches postMessage back to window.opener.
+      const origin = window.location.origin.replace('ais-dev-', 'ais-pre-');
+      return `${origin}/auth/callback`;
+    }
+    return 'http://localhost:3000/auth/callback';
+  };
+
+  // Helper to map Supabase user to Profile
+  const mapSessionUser = (supabaseUser: any): Profile => {
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email || '',
+      full_name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || 'Valued Patron',
+      avatar_url: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture,
+    };
+  };
+
+  // Listen for popup callback postMessage
   useEffect(() => {
-    async function initAuth() {
-      try {
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        console.log('[Auth] Received OAuth popup success notification');
+        
+        try {
+          if (event.data.search) {
+            const searchParams = new URLSearchParams(event.data.search);
+            const code = searchParams.get('code');
+            if (code && isConfigured) {
+              await supabase.auth.exchangeCodeForSession(code);
+            }
+          } else if (event.data.hash) {
+            const hashParams = new URLSearchParams(event.data.hash.replace(/^#/, ''));
+            const access_token = hashParams.get('access_token');
+            const refresh_token = hashParams.get('refresh_token');
+            if (access_token && refresh_token && isConfigured) {
+              await supabase.auth.setSession({ access_token, refresh_token });
+            }
+          }
+        } catch (err) {
+          console.warn('[Auth] Error setting session from popup payload:', err);
+        }
+
         if (isConfigured) {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Valued Customer',
-              avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
-            });
+            const u = mapSessionUser(session.user);
+            setUser(u);
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('novatrend_patron_user', JSON.stringify(u));
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('message', handleOAuthMessage);
+    return () => window.removeEventListener('message', handleOAuthMessage);
+  }, [isConfigured]);
+
+  // Initialize and persist session across reloads
+  useEffect(() => {
+    async function initAuth() {
+      try {
+        // 1. Check if returning from OAuth redirect with access_token or code in URL
+        if (typeof window !== 'undefined') {
+          const hasAuthHash = window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error'));
+          const hasAuthCode = window.location.search && window.location.search.includes('code=');
+
+          if (hasAuthHash || hasAuthCode) {
+            console.log('[Auth] Detected OAuth callback in URL, extracting session...');
+            if (isConfigured) {
+              try {
+                if (hasAuthCode) {
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const code = urlParams.get('code');
+                  if (code) {
+                    await supabase.auth.exchangeCodeForSession(code);
+                  }
+                }
+              } catch (e) {
+                console.warn('[Auth] Code exchange error:', e);
+              }
+
+              const { data } = await supabase.auth.getSession();
+              if (data?.session?.user) {
+                const u = mapSessionUser(data.session.user);
+                setUser(u);
+                if (typeof localStorage !== 'undefined') {
+                  localStorage.setItem('novatrend_patron_user', JSON.stringify(u));
+                }
+                // Clean URL parameters without refreshing
+                window.history.replaceState(null, '', window.location.pathname);
+                setLoading(false);
+                return;
+              }
+            }
+          }
+        }
+
+        // 2. Check Supabase active session
+        if (isConfigured) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const u = mapSessionUser(session.user);
+            setUser(u);
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('novatrend_patron_user', JSON.stringify(u));
+            }
             setLoading(false);
             return;
           }
 
-          // Listen for auth changes
+          // Listen for real-time auth changes
           const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-              setUser({
-                id: session.user.id,
-                email: session.user.email || '',
-                full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Valued Customer',
-                avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
-              });
+              const u = mapSessionUser(session.user);
+              setUser(u);
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('novatrend_patron_user', JSON.stringify(u));
+              }
+            } else if (!session) {
+              setUser(null);
+              if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('novatrend_patron_user');
+              }
             }
           });
 
-          // Check if demo user is stored in localStorage as fallback
-          const savedDemoUser = localStorage.getItem('eda_demo_user');
-          if (savedDemoUser) {
-            try {
-              setUser(JSON.parse(savedDemoUser));
-            } catch (e) {
-              localStorage.removeItem('eda_demo_user');
+          // 3. Fallback to persisted patron session in localStorage
+          if (typeof localStorage !== 'undefined') {
+            const savedUser = localStorage.getItem('novatrend_patron_user');
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser));
+              } catch (e) {
+                localStorage.removeItem('novatrend_patron_user');
+              }
             }
           }
 
@@ -85,13 +192,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             subscription.unsubscribe();
           };
         } else {
-          // Check local storage for demo persisted user
-          const savedDemoUser = localStorage.getItem('eda_demo_user');
-          if (savedDemoUser) {
-            try {
-              setUser(JSON.parse(savedDemoUser));
-            } catch (e) {
-              localStorage.removeItem('eda_demo_user');
+          // If Supabase not yet configured, check localStorage
+          if (typeof localStorage !== 'undefined') {
+            const savedUser = localStorage.getItem('novatrend_patron_user');
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser));
+              } catch (e) {
+                localStorage.removeItem('novatrend_patron_user');
+              }
             }
           }
         }
@@ -105,50 +214,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [isConfigured]);
 
-  // Listen for cross-origin popup OAuth message
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-        console.log('[Auth] Received OAuth success message from popup');
-        try {
-          if (isConfigured) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              setUser({
-                id: session.user.id,
-                email: session.user.email || '',
-                full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Google Patron',
-                avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
-              });
-              return;
-            }
-          }
-        } catch (e) {
-          console.warn('Session retrieval error after OAuth:', e);
-        }
-        // Fallback to current authenticated Google user
-        signInWithDemoUser('currentUser');
-      }
-    };
+  // Google OAuth sign-in using Popup Flow (compliant with AI Studio iframe constraints)
+  const signInWithGoogle = async (): Promise<{ error: Error | null; unsupportedProvider?: boolean }> => {
+    const callbackUrl = getCallbackUrl();
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isConfigured]);
-
-  const signInWithGoogle = async (): Promise<{ error: Error | null; url?: string }> => {
     if (!isConfigured) {
-      signInWithDemoUser('currentUser');
-      return { error: null };
+      return { error: new Error('Supabase client is not configured.') };
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      // We use skipBrowserRedirect: true so that we can open a popup.
-      // Google blocks being displayed in an iframe!
+      // Initiate OAuth request with skipBrowserRedirect: true so the iframe is not navigated
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl,
+          redirectTo: callbackUrl,
           skipBrowserRedirect: true,
           queryParams: {
             access_type: 'offline',
@@ -158,38 +237,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        return { error: new Error(error.message) };
+        if (error.message.includes('not enabled') || error.message.includes('Unsupported provider')) {
+          return { error, unsupportedProvider: true };
+        }
+        return { error };
       }
 
-      if (data?.url) {
-        // Open popup
-        const width = 550;
-        const height = 650;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        const popup = window.open(
-          data.url,
-          'google_oauth_popup',
-          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
-        );
+      if (!data?.url) {
+        return { error: new Error('Supabase did not return an authorization URL.') };
+      }
 
-        if (!popup) {
-          return { error: new Error('Popup blocked. Please allow popups for this site, or select instant Google sign-in.') };
-        }
+      // Open provider URL directly in a dedicated popup window
+      const width = 520;
+      const height = 650;
+      const left = typeof window !== 'undefined' ? window.screenX + Math.max(0, (window.outerWidth - width) / 2) : 100;
+      const top = typeof window !== 'undefined' ? window.screenY + Math.max(0, (window.outerHeight - height) / 2) : 100;
 
-        return { error: null, url: data.url };
+      const popup = window.open(
+        data.url,
+        'google_oauth_popup',
+        `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes,scrollbars=yes`
+      );
+
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // Popup was blocked by browser
+        console.warn('[Auth] Popup blocked by browser, attempting window redirect fallback');
+        window.open(data.url, '_blank');
+      } else {
+        popup.focus();
+
+        // Polling fallback while popup is active
+        const pollTimer = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(pollTimer);
+          }
+
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user) {
+            clearInterval(pollTimer);
+            if (!popup.closed) {
+              popup.close();
+            }
+            const u = mapSessionUser(sessionData.session.user);
+            setUser(u);
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('novatrend_patron_user', JSON.stringify(u));
+            }
+          }
+        }, 1500);
       }
 
       return { error: null };
     } catch (err: any) {
+      console.error('Google Sign-in error:', err);
       return { error: err };
     }
   };
 
-  const signInWithDemoUser = (persona: 'lagos' | 'abuja' | 'currentUser' = 'currentUser') => {
+  const signInWithDemoUser = (persona: 'currentUser' | 'lagos' | 'abuja' = 'currentUser') => {
     const selectedUser = DEMO_USERS[persona];
     setUser(selectedUser);
-    localStorage.setItem('eda_demo_user', JSON.stringify(selectedUser));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('novatrend_patron_user', JSON.stringify(selectedUser));
+    }
   };
 
   const signOut = async () => {
@@ -200,7 +310,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Supabase signOut notice:', err);
       }
     }
-    localStorage.removeItem('eda_demo_user');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('novatrend_patron_user');
+      localStorage.removeItem('eda_demo_user');
+    }
     setUser(null);
   };
 

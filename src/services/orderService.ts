@@ -76,13 +76,14 @@ export const orderService = {
       const authoritativeDeliveryFee = matchedState.delivery_fee;
       const authoritativeTotal = authoritativeSubtotal + authoritativeDeliveryFee;
 
-      // 3. Generate Nigerian order reference number (e.g. EDA-2026-8941)
+      // 3. Generate Nigerian order reference number (e.g. NOVA-2026-8941)
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const orderNumber = `EDA-${new Date().getFullYear()}-${randomSuffix}`;
+      const orderNumber = `NOVA-${new Date().getFullYear()}-${randomSuffix}`;
       const now = new Date().toISOString();
+      const generatedOrderId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ord_${Date.now()}`;
 
       const newOrder: Order = {
-        id: `ord_${Date.now()}_${randomSuffix}`,
+        id: generatedOrderId,
         user_id: userId,
         order_number: orderNumber,
         status: 'processing',
@@ -105,35 +106,40 @@ export const orderService = {
       // 4. Persistence to Supabase (if configured and table exists)
       if (isSupabaseConfigured()) {
         try {
-          const { data: insertedOrder, error: orderErr } = await supabase
+          const isValidUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+          const sanitizedUserId = isValidUUID(userId) ? userId : null;
+          const orderDbId = isValidUUID(generatedOrderId) ? generatedOrderId : undefined;
+
+          const insertPayload: any = {
+            order_number: orderNumber,
+            status: 'processing',
+            payment_status: 'paid',
+            subtotal: authoritativeSubtotal,
+            delivery_fee: authoritativeDeliveryFee,
+            total: authoritativeTotal,
+            customer_name: formData.fullName,
+            customer_email: formData.email,
+            customer_phone: formData.phone,
+            delivery_address: formData.deliveryAddress,
+            city: formData.city,
+            state: formData.state,
+            notes: formData.notes,
+          };
+
+          if (sanitizedUserId) insertPayload.user_id = sanitizedUserId;
+          if (orderDbId) insertPayload.id = orderDbId;
+
+          const { error: orderErr } = await supabase
             .from('orders')
-            .insert({
-              user_id: userId.includes('usr_') ? null : userId, // UUID check
-              order_number: orderNumber,
-              status: 'processing',
-              payment_status: 'paid',
-              subtotal: authoritativeSubtotal,
-              delivery_fee: authoritativeDeliveryFee,
-              total: authoritativeTotal,
-              customer_name: formData.fullName,
-              customer_email: formData.email,
-              customer_phone: formData.phone,
-              delivery_address: formData.deliveryAddress,
-              city: formData.city,
-              state: formData.state,
-              notes: formData.notes,
-            })
-            .select()
-            .single();
+            .insert(insertPayload);
 
           if (orderErr) {
-            console.info('[OrderService] Supabase insert note (using client persistence fallback):', orderErr.message);
-          } else if (insertedOrder) {
-            newOrder.id = insertedOrder.id;
-
-            // Insert order items snapshot
+            console.info('[OrderService] Supabase insert note:', orderErr.message);
+          } else {
+            // Insert order items snapshot linked to this order
+            const targetOrderId = orderDbId || generatedOrderId;
             const itemsToInsert = orderItemsToCreate.map((item) => ({
-              order_id: insertedOrder.id,
+              order_id: targetOrderId,
               product_id: item.product_id,
               product_name: item.product_name,
               unit_price: item.unit_price,
@@ -170,17 +176,18 @@ export const orderService = {
   },
 
   saveLocalOrder(order: Order) {
+    if (typeof localStorage === 'undefined') return;
     try {
-      const existingStr = localStorage.getItem(`eda_orders_${order.user_id}`);
+      const existingStr = localStorage.getItem(`novatrend_orders_${order.user_id}`) || localStorage.getItem(`eda_orders_${order.user_id}`);
       const orders: Order[] = existingStr ? JSON.parse(existingStr) : [];
       orders.unshift(order);
-      localStorage.setItem(`eda_orders_${order.user_id}`, JSON.stringify(orders));
+      localStorage.setItem(`novatrend_orders_${order.user_id}`, JSON.stringify(orders));
 
       // Also store in general list for lookup
-      const allOrdersStr = localStorage.getItem('eda_all_orders');
+      const allOrdersStr = localStorage.getItem('novatrend_all_orders') || localStorage.getItem('eda_all_orders');
       const allOrders: Order[] = allOrdersStr ? JSON.parse(allOrdersStr) : [];
       allOrders.unshift(order);
-      localStorage.setItem('eda_all_orders', JSON.stringify(allOrders));
+      localStorage.setItem('novatrend_all_orders', JSON.stringify(allOrders));
     } catch (err) {
       console.error('Failed to save order locally:', err);
     }
@@ -206,40 +213,44 @@ export const orderService = {
       }
     }
 
-    try {
-      const saved = localStorage.getItem(`eda_orders_${userId}`);
-      if (saved) {
-        return JSON.parse(saved);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`novatrend_orders_${userId}`) || localStorage.getItem(`eda_orders_${userId}`);
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (err) {
+        console.error('Error reading local orders:', err);
       }
-    } catch (err) {
-      console.error('Error reading local orders:', err);
-    }
 
-    try {
-      const allOrdersStr = localStorage.getItem('eda_all_orders');
-      if (allOrdersStr) {
-        const allOrders: Order[] = JSON.parse(allOrdersStr);
-        const filtered = allOrders.filter(o => o.user_id === userId);
-        if (filtered.length > 0) return filtered;
-        return allOrders;
+      try {
+        const allOrdersStr = localStorage.getItem('novatrend_all_orders') || localStorage.getItem('eda_all_orders');
+        if (allOrdersStr) {
+          const allOrders: Order[] = JSON.parse(allOrdersStr);
+          const filtered = allOrders.filter(o => o.user_id === userId);
+          if (filtered.length > 0) return filtered;
+          return allOrders;
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
 
     return [];
   },
 
   async getOrderById(orderId: string): Promise<Order | null> {
-    try {
-      const allOrdersStr = localStorage.getItem('eda_all_orders');
-      if (allOrdersStr) {
-        const allOrders: Order[] = JSON.parse(allOrdersStr);
-        const found = allOrders.find((o) => o.id === orderId || o.order_number === orderId);
-        if (found) return found;
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const allOrdersStr = localStorage.getItem('novatrend_all_orders') || localStorage.getItem('eda_all_orders');
+        if (allOrdersStr) {
+          const allOrders: Order[] = JSON.parse(allOrdersStr);
+          const found = allOrders.find((o) => o.id === orderId || o.order_number === orderId);
+          if (found) return found;
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
 
     if (isSupabaseConfigured()) {

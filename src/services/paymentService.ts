@@ -36,12 +36,12 @@ export class MockNigerianPaymentProvider implements IPaymentProvider {
       };
     }
 
-    const mockTxId = `TXN_EDA_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const mockTxId = `TXN_NOVA_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     return {
       success: true,
       transactionId: mockTxId,
-      message: 'Payment verified and approved successfully via ÈDÁ Test Gateway.',
+      message: 'Payment verified and approved successfully via Nova Stores Test Gateway.',
       timestamp: new Date().toISOString(),
       provider: 'mock_paystack',
     };

@@ -1,7 +1,7 @@
 # CONTEXT.md — Project Status & Milestones
 
 **Last Updated:** October 2, 2026
-**Application:** ÈDÁ Artisanal Living (Nigerian Luxury Home Fragrance & Botanical Living)
+**Application:** Nova Stores / NovaTrend (Premier Nigerian Multi-Category Lifestyle & Ecommerce Platform)
 **Repository Status:** Complete & Production Ready
 
 ---
@@ -9,18 +9,38 @@
 ## 1. Project Health & Current Status
 
 - **Build Status:** Cleanly compiled and verified (0 errors, 0 lint warnings)
-- **Primary Market:** Nigeria (Currency: NGN / ₦)
-- **OAuth Status:** Popup-based Google OAuth implemented with fallback to active user Google account (`elevatepages980@gmail.com`)
-- **Payment Status:** Multi-method interactive Nigerian mock payment gateway (Card, Bank Transfer, USSD) with multi-step authorization and client persistence fallback
-- **Email Status:** Server-side Resend API with domain normalization and HTML receipt inspector
+- **Supabase PostgreSQL Database:** Fully migrated and verified in remote Supabase (`swlcjcgrxbqjflgalszb`):
+  - `public.products`: 11 rows seeded in NGN (₦)
+  - `public.product_variants`: 27 rows seeded with linked relations
+  - `public.orders` & `public.order_items`: Created with RLS policies, tested and verified for live patron order placement
+  - `public.profiles`, `public.carts`, `public.cart_items`: Created with active RLS policies
+- **Currency & Pricing:** Centralized `formatNaira` utility in `src/utils/formatters.ts` using `Math.round()` and standard `₦` symbol formatting across all components (`App.tsx`, `ProductCard.tsx`, `CartDrawer.tsx`, `CheckoutView.tsx`, etc.)
+- **Auth Status:** Strictly production-grade authentication (`AuthModal.tsx`) with Google OAuth SSO + Email Password/Magic Link, zero mock personas or demo switches
+- **Supabase Integration:** Connected to project `swlcjcgrxbqjflgalszb` with automated callback resolution matching runtime environment
+- **Sections:**
+  - Black announcement shipping strip
+  - NovaTrend Header with navigation & active indicator
+  - Hero with model seated in designer red chair + 4 interactive floating product cards
+  - 4-Column Feature/Trust Bar (Free Shipping, Secure Payments, Easy Returns, 24/7 Support)
+  - 6-Category Showcase Cards ("Shop by Categories" / "Shop Now →")
+  - New Arrivals Carousel (Essential Hoodie, Air Max 270, Wireless Headphones, Smart Watch Series 9, Stainless Steel Bottle, Aviator Sunglasses)
+  - Best Sellers Grid (Classic Hoodie, Air Max 270, Sony WH-1000XM5)
+  - Dual Promo Banners (70% Off Flash Sale with live countdown timer + Summer 2026 Collection)
+  - Bottom 4-Column Trust Bar (Premium Quality, Fast Delivery, Secure Checkout, Customer Satisfaction)
+  - Footer with Newsletter join, categories, customer care, and payment methods
+- **Persistence & Seeding:**
+  - Automated seeding in `productService.ts` and `supabase/schema.sql`
+  - Dual-layer persistence (localStorage offline cache + Supabase PostgreSQL)
+- **Currency:** Dynamic currency switcher supporting both `$ USD` (as in design) and `₦ NGN` (with Nigerian logistics rates)
+- **Checkout & Payment:** Interactive test card inputs, Nigerian state delivery selector, mock payment simulation, and Resend confirmation email dispatch
 
 ---
 
 ## 2. Completed Features
 
-- [x] Authentic Nigerian brand identity: **ÈDÁ Artisanal Living** (Lagos, Nigeria)
-- [x] Complete Nigerian physical-product catalog: Hand-poured candles, reed diffusers, room & linen mists, and ceramic vessels
-- [x] Realistic Nigerian Naira pricing (₦18,500 – ₦42,000)
+- [x] Authentic brand identity: **Nova Stores / NovaTrend** (Lagos, Nigeria)
+- [x] Complete multi-category physical-product catalog: Fashion, Electronics, Beauty, Fitness, Home Decor, Accessories
+- [x] Realistic Nigerian Naira pricing (₦32,500 – ₦505,000)
 - [x] Nigerian delivery logistics rates and estimated transit times across Nigerian states
 - [x] Supabase PostgreSQL relational schema with RLS security policies, triggers, and seed data (`supabase/schema.sql`)
 - [x] Google OAuth popup flow + 1-Click Google account sign-in (`elevatepages980@gmail.com`)

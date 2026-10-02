@@ -28,12 +28,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   // Storage key is scoped to user id if authenticated, or guest key
-  const storageKey = user ? `eda_cart_${user.id}` : 'eda_cart_guest';
+  const storageKey = user ? `novatrend_cart_${user.id}` : 'novatrend_cart_guest';
+  const legacyStorageKey = user ? `eda_cart_${user.id}` : 'eda_cart_guest';
 
   // Load cart from storage on user change
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = localStorage.getItem(storageKey) || localStorage.getItem(legacyStorageKey);
       if (saved) {
         setItems(JSON.parse(saved));
       } else {
@@ -42,7 +43,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Failed to load cart from storage:', err);
     }
-  }, [storageKey]);
+  }, [storageKey, legacyStorageKey]);
 
   // Persist cart to localStorage whenever items change
   useEffect(() => {

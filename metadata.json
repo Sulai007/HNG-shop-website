@@ -1,6 +1,6 @@
 {
-  "name": "ÈDÁ Artisanal Living | Nigerian Luxury Fragrance & Home",
-  "description": "Premium Nigerian physical-product ecommerce platform featuring handcrafted artisanal scented candles, botanical reed diffusers, and room mists. Built with Supabase, Google Auth, Resend, and Expo.",
+  "name": "NovaTrend | Discover Products You'll Love",
+  "description": "Shop the latest trending products curated for modern lifestyles. Fashion, Electronics, Beauty, Fitness, Home Decor, and Accessories with fast delivery and secure checkout.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

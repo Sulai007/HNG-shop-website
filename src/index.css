@@ -2,7 +2,7 @@
 
 @layer base {
   :root {
-    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-heading: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
@@ -10,24 +10,24 @@
     font-family: var(--font-sans);
   }
 
-  h1, h2, h3, .font-display {
-    font-family: var(--font-serif);
+  h1, h2, h3, h4, .font-heading {
+    font-family: var(--font-heading);
   }
 }
 
-/* Custom scrollbar for clean luxury feel */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FAF8F5;
+  background: #F3F4F6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D9D2C9;
+  background: #D1D5DB;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8ADA0;
+  background: #9CA3AF;
 }
 

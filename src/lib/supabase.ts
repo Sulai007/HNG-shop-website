@@ -1,13 +1,24 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+const getEnv = () => {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      return import.meta.env;
+    }
+  } catch (e) {}
+  return (typeof process !== 'undefined' && process.env) ? process.env : {} as any;
+};
+
+const env = getEnv();
+
 const supabaseUrl = 
-  import.meta.env.VITE_SUPABASE_URL || 
-  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  env.VITE_SUPABASE_URL || 
+  env.NEXT_PUBLIC_SUPABASE_URL ||
   '';
 
 const supabaseAnonKey = 
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  env.VITE_SUPABASE_ANON_KEY || 
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   '';
 
 export const isSupabaseConfigured = (): boolean => {
@@ -23,6 +34,7 @@ export const isSupabaseConfigured = (): boolean => {
 export const supabase: SupabaseClient = isSupabaseConfigured()
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
+        flowType: 'implicit',
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
@@ -33,6 +45,7 @@ export const supabase: SupabaseClient = isSupabaseConfigured()
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder',
       {
         auth: {
+          flowType: 'implicit',
           persistSession: true,
         },
       }
