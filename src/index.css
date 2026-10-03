@@ -1,9 +1,24 @@
 @import "tailwindcss";
 
+/* Ensure Nigerian Naira (₦) U+20A6 glyph is always loaded from a font that supports it */
+@font-face {
+  font-family: 'NairaGlyph';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/l/font?kit=UcC73FwrK3iLTeHuS_nVMrMxCp50SjIq14D9k8SX&skey=c491285d6722e4fa&v=v20') format('woff2'),
+       local('Arial'),
+       local('Segoe UI'),
+       local('Tahoma'),
+       local('sans-serif');
+  unicode-range: U+20A6;
+}
+
 @layer base {
   :root {
-    --font-heading: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-heading: 'Outfit', 'NairaGlyph', 'Inter', 'Plus Jakarta Sans', Arial, 'Segoe UI', system-ui, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', 'NairaGlyph', 'Inter', Arial, 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'NairaGlyph', 'Inter', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 
   body {
@@ -12,6 +27,10 @@
 
   h1, h2, h3, h4, .font-heading {
     font-family: var(--font-heading);
+  }
+
+  code, kbd, samp, pre, .font-mono {
+    font-family: var(--font-mono);
   }
 }
 
@@ -30,4 +49,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #9CA3AF;
 }
-
